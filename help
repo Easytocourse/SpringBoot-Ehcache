@@ -1,0 +1,76 @@
+<dependency>  
+<groupId>org.springframework.boot</groupId>  
+<artifactId>spring-boot-starter-cache</artifactId>  
+</dependency>  
+<dependency>  
+<groupId>org.ehcache</groupId>  
+<artifactId>ehcache</artifactId>  
+</dependency>  
+<dependency>  
+<groupId>javax.cache</groupId>  
+<artifactId>cache-api</artifactId>  
+</dependency> 
+
+
+
+
+spring.cache.jcache.config=classpath:ehcache.xml  
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+	xmlns:jsr107='http://www.ehcache.org/v3/jsr107'
+	xmlns='http://www.ehcache.org/v3'
+	xsi:schemaLocation="
+        http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.5.xsd
+        http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext-3.5.xsd">
+
+	<service>
+		<jsr107:defaults enable-management="false"
+			enable-statistics="true" />
+	</service>
+
+	<cache alias="demoCache">
+		<expiry>
+			<ttl unit="seconds">30</ttl>
+		</expiry>
+		<resources>
+
+			<heap unit="entries">2000</heap>
+			<offheap unit="MB">100</offheap>
+		</resources>
+	</cache>
+</config>
+
+
+
+
+@EnableCaching  
+
+
+
+@Cacheable(cacheNames="demoCache", key="#id")
+
+
+@CachePut(cacheNames = "demoCache", key = "#result.id")
+
+
+@CacheConfig(cacheNames = "demoCache")
+
+
+@CacheEvict(cacheNames = {"demoCache"}, allEntries = true)
+public void evictCache() {
+  LOG.info("Evict all cache entries...");
+}
+
+
+
+@Autowired
+	private CacheManager cacheManager;
+
+	public void getfromcachemanager() {
+		Cache cache = cacheManager.getCache("demoCache");
+		Employee emp = (Employee) cache.get(20).get();
+		log.info("from the cachemanager="+emp);
+	}
